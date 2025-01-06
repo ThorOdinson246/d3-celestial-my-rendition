@@ -1,42 +1,184 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2D Star Map</title>
-  <script src="aa/d3-celestial/lib/d3.min.js"></script>
-  <script src="aa/d3-celestial/lib/d3.geo.projection.min.js"></script>
-  <script src="aa/d3-celestial/celestial.min.js"></script>
+  <title>Restricted Star Map</title>
+  <script src="../lib/d3.min.js"></script>
+  <script src="../lib/d3.geo.projection.min.js"></script>
+  <script src="../celestial.min.js"></script>
 </head>
 <body>
   <div id="celestial-map" style="width: 100%; height: 100vh;"></div>
 
   <script>
+    // Initialize the celestial map
     Celestial.display({
       container: "celestial-map",
       projection: "equirectangular", // Flat map projection
-      datapath: "aa/d3-celestial/data/",
+      datapath: "../data/",
       interactive: true,
       form: false,
       stars: {
-        show: false,
-        limit: 6, 
+        show: true,
+        limit: 5,
         size: 7,
         colors: true,
       },
       constellations: {
-        // show: true,
-        // names: true,
-        // lines: true,
+        show: true,
+        names: true,
+        lines: true,
         nameStyle: { fill:"#cccc99", align:"center", baseline:"middle", font:["14px Helvetica"] }
       },
-      zoomlevel: 1,
-      background: { fill:"#000000" },
-      center: [0, 0, 0], // Fix center at RA=0, Dec=0 with no rotation
+      zoomlevel: 2, // Initial zoom level
+      zoomextend: [1, 5], // Limit zoom levels between 1x and 5x
+      center: [0, 0, 0], // Centered at RA=0, Dec=0
       orientationfixed: true, // Prevents rotation
-      follow: "center" // Ensures no animation on load
+    });
+
+    // Restrict panning after initialization
+    Celestial.addCallback(() => {
+      const svg = d3.select("#celestial-map svg");
+      const g = svg.select("g"); // The group element containing all map elements
+
+      // Define bounds for panning (in RA/Dec)
+      const raMin = -30; // Minimum Right Ascension (degrees)
+      const raMax = 30; // Maximum Right Ascension (degrees)
+      const decMin = -30; // Minimum Declination (degrees)
+      const decMax = 30; // Maximum Declination (degrees)
+
+      // Override the default pan behavior
+      svg.call(
+        d3.zoom()
+          .scaleExtent([1, 5]) // Restrict zoom levels between 1x and 5x
+          .on("zoom", function (event) {
+            const transform = event.transform;
+
+            // Clamp translation values (panning limits)
+            const x = Math.max(raMin, Math.min(raMax, transform.x));
+            const y = Math.max(decMin, Math.min(decMax, transform.y));
+
+            g.attr("transform", `translate(${x}, ${y}) scale(${transform.k})`);
+          })
+      );
     });
   </script>
 </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orion Constellation</title>
+  <script src="../lib/d3.min.js"></script>
+  <script src="../lib/d3.geo.projection.min.js"></script>
+  <script src="../celestial.min.js"></script>
+</head>
+<body>
+  <div id="celestial-map" style="width: 100%; height: 100vh;"></div>
+
+  <script>
+    // Orion Constellation Data in D3-Celestial Format
+    const orionData = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "id": "Ori",
+          "properties": { "name": "Orion" },
+          "geometry": {
+            "type": "MultiLineString",
+            "coordinates": [
+              [
+                [91.893, 14.7685],
+                [88.5958, 20.2762],
+                [90.9799, 20.1385],
+                [92.985, 14.2088],
+                [90.5958, 9.6473],
+                [88.7929, 7.4071],
+                [81.2828, 6.3497],
+                [73.7239, 10.1508]
+              ],
+              [
+                [74.6371, 1.714],
+                [73.5629, 2.4407],
+                [72.8015, 5.6051],
+                [72.46, 6.9613],
+                [72.653, 8.9002],
+                [73.7239, 10.1508],
+                [74.0928, 13.5145],
+                [76.1423, 15.4041],
+                [77.4248, 15.5972]
+              ],
+              [
+                [78.6345, -8.2016],
+                [81.1192, -2.3971],
+                [83.0017, -0.2991],
+                [81.2828, 6.3497],
+                [83.7845, 9.9342],
+                [88.7929, 7.4071],
+                [85.1897, -1.9426],
+                [86.9391, -9.6696]
+              ],
+              [
+                [85.1897, -1.9426],
+                [84.0534, -1.2019],
+                [83.0017, -0.2991]
+              ]
+            ]
+          }
+        }
+      ]
+    };
+
+    // Initialize the celestial map
+    Celestial.display({
+      container: "celestial-map",
+      projection: "equirectangular", // Flat map projection
+      interactive: true,
+      form: false,
+      datapath: "../data/", // Path for other celestial data (if needed)
+      stars: { show: false }, // Hide all stars
+      constellations: {
+        show: true,
+        names: true,
+        lines: true,
+        bounds: false,
+      },
+      grid: { show: false }, // Hide grid lines
+      planets: { show: false }, // Hide planets
+      zoomlevel: 4,
+      background: { fill: "#000000" }, // Black background
+
+      // Callback to render Orion constellation
+      callback() {
+        const svg = d3.select("#celestial-map svg");
+
+        // Draw Orion constellation lines manually
+        orionData.features.forEach(feature => {
+          feature.geometry.coordinates.forEach(line => {
+            svg.append("path")
+              .datum({ type: "LineString", coordinates: line })
+              .attr("d", Celestial.map) // Use Celestial's map projection
+              .attr("class", "orion-line")
+              .style("fill", "none")
+              .style("stroke", "#ffffff") // White lines for Orion
+              .style("stroke-width", "1px");
+          });
+        });
+      }
+    });
+  </script>
+
+  <style>
+    /* Style for Orion constellation lines */
+    .orion-line {
+      stroke-dasharray: none;
+    }
+  </style>
+</body>
 </html>
+
 
