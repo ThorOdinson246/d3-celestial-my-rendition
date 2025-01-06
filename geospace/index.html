@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Star Map</title>
+  <script src="aa/d3-celestial/lib/d3.min.js"></script>
+  <script src="aa/d3-celestial/lib/d3.geo.projection.min.js"></script>
+  <script src="aa/d3-celestial/celestial.min.js"></script>
+</head>
+<body>
+  <div id="celestial-map" style="width: 100%; height: 100vh;"></div>
+
+  <script>
+    Celestial.display({
+      container: "celestial-map",
+      projection: "equirectangular", // Flat map projection
+      datapath: "aa/d3-celestial/data/",
+      interactive: true,
+      form: false,
+      stars: {
+        show: false,
+        limit: 6, 
+        size: 7,
+        colors: true,
+      },
+      constellations: {
+        // show: true,
+        // names: true,
+        // lines: true,
+        nameStyle: { fill:"#cccc99", align:"center", baseline:"middle", font:["14px Helvetica"] }
+      },
+      zoomlevel: 1,
+      background: { fill:"#000000" },
+      center: [0, 0, 0], // Fix center at RA=0, Dec=0 with no rotation
+      orientationfixed: true, // Prevents rotation
+      follow: "center" // Ensures no animation on load
+    });
+  </script>
+</body>
+</html>
+
